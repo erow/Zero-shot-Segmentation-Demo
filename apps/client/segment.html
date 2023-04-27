@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Matching</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .image-box {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Matching</h1>
+    <form id="submit-form">
+        <label for="key-image">Key Image:</label>
+        <input type="file" id="key-image" required><br><br>
+        <label for="query-image">Query Image:</label>
+        <input type="file" id="query-image" required><br><br>
+        <button type="submit">Submit Images</button>
+    </form>
+
+    <div class="image-container" id="image-container"></div>
+
+    <script>
+        const submitForm = document.getElementById('submit-form');
+        const imageContainer = document.getElementById('image-container');
+
+        function displayImages(images) {
+            imageContainer.innerHTML = '';
+
+            images.forEach(image => {
+                const imageBox = document.createElement('div');
+                imageBox.className = 'image-box';
+                
+                const img = document.createElement('img');
+                img.src = image.url;
+                img.width = 200;
+
+                imageBox.appendChild(img);
+                imageContainer.appendChild(imageBox);
+            });
+        }
+
+        async function submitImages(event) {
+            event.preventDefault();
+
+            const keyImageInput = document.getElementById('key-image');
+            const queryImageInput = document.getElementById('query-image');
+
+            const formData = new FormData();
+            formData.append('key_image', keyImageInput.files[0]);
+            formData.append('query_image', queryImageInput.files[0]);
+
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            // TODO: 用户在query图片上选择一个区域，并获取坐标值
+            const coords = { x: 100, y: 200 };
+
+            const selectResponse = await fetch('/select', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    key_image_id: data.key_image_id,
+                    query_image_id: data.query_image_id,
+                    coords: coords
+                })
+            });
+
+            const matchedImages = await selectResponse.json();
+
+            // 显示匹配到的图片
+            displayImages(matchedImages);
+        }
+
+        submitForm.addEventListener('submit', submitImages);
+    </script>
+</body>
+</html>

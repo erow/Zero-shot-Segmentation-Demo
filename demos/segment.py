@@ -123,7 +123,7 @@ if __name__ == '__main__':
         return imagesToPrint.clamp(0,1)
         
     ## init model
-    embedding = PatchEmbedding(args.pretrained_weights)
+    embedding = PatchEmbedding(args.pretrained_weights,arch=args.arch)
     
     # read image
     image = Image.open(args.img)
